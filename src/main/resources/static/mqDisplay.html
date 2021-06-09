@@ -1,0 +1,19 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+Welcome!
+<form action="/displayMessage" method="GET">
+	Host: <input type="text" name="host" value="cs-v-mqdev1.champ.aero"/><br>
+	Manager: <input type="text" name="manager" value="CCSLUXD1"/><br>
+	Channel: <input type="text" name="channel" value="CS.SVRCONN"/><br>
+	Port: <input type="text" name="port" value="1414"/><br>
+	Queue: <input type="text" name="queue" value="CS.DEV.TEST2.OUT"/> <br>
+	
+    <input type="submit" name="name" value="Connect" />
+</form>
+</body>
+</html>
