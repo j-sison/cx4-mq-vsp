@@ -1,16 +1,18 @@
 package com.jay.mqconsumer;
 
+import static com.jay.mqconsumer.service.util.MqSenderUtil.convertMsgToList;
+
 import com.ibm.mq.MQException;
 
 import com.jay.mqconsumer.service.util.MqManagerConnection;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
 
 import org.springframework.ui.Model;
 
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
@@ -24,25 +26,29 @@ import java.util.Map;
  *
  * @version  $Revision$, $Date$
  */
-
 @RestController
 public class MQController
 {
-	@Value("${cust.mq.host}")
-	private String host;
-
-	@Value("${cust.mq.manager}")
-	private String manager;
-
+	//~ Instance fields --------------------------
+	/**  */
 	@Value("${cust.mq.channel}")
 	private String channel;
 
+	/**  */
+	@Value("${cust.mq.host}")
+	private String host;
+
+	/**  */
+	@Value("${cust.mq.manager}")
+	private String manager;
+
+	/**  */
 	@Value("${cust.mq.port}")
 	private int port;
 
+	/**  */
 	@Value("${cust.mq.queue}")
 	private String queue;
-
 	//~ Methods ----------------------------------
 	/*
 	 * public String test(@RequestParam(     name = "name",     required = false,     defaultValue = "World" ) String
@@ -75,10 +81,15 @@ public class MQController
 
 		return "displayMessages";
 	}
-
-
+	
+	/**
+	 * DOCUMENT ME!
+	 *
+	 * @return
+	 */
 	@GetMapping("/getMqMessages")
-	private List<String> retrievedMqMes()  {
+	private List<String> retrievedMqMes()
+	{
 		List<String> messages = new ArrayList<String>();
 
 		try
@@ -97,8 +108,17 @@ public class MQController
 
 		return messages;
 	}
-
-	private List<String> retrieveMqMSGS(MqManagerConnection mq, List<String> messages) throws IOException {
+	
+	/**
+	 * DOCUMENT ME!
+	 *
+	 * @param   mq
+	 * @param   messages
+	 * @return
+	 * @throws  IOException
+	 */
+	private List<String> retrieveMqMSGS(MqManagerConnection mq, List<String> messages) throws IOException
+	{
 		boolean keepReading = true;
 		while (keepReading)
 		{
@@ -115,14 +135,15 @@ public class MQController
 				}
 				keepReading = false;
 			}
-			if(message != null) {
+			if (message != null)
+			{
 				messages.add(message);
 			}
 		}
 
 		return messages;
 	}
-
+	
 	/**
 	 * DOCUMENT ME!
 	 *
@@ -138,17 +159,36 @@ public class MQController
 		MqManagerConnection mq = MqManagerConnection.connect(allParams.get("host"), allParams.get("manager"),
 				allParams.get("channel"), Integer.parseInt(allParams.get("port")), allParams.get("queue"));
 
-		mq.send(allParams.get("msgText"));
+		if (allParams.get("isMultipleEnabled") != null)
+		{
+			for (String msg : convertMsgToList(allParams.get("msgText")))
+			{
+				mq.send(msg);
+			}
+		}
+		else
+		{
+			mq.send(allParams.get("msgText"));
+		}
 
 		mq.commit();
 		mq.disconnect();
 
 		return "msgSent";
 	}
-
+	
+	/**
+	 * DOCUMENT ME!
+	 *
+	 * @param   allParams
+	 * @return
+	 * @throws  IOException
+	 * @throws  NumberFormatException
+	 * @throws  MQException
+	 */
 	@GetMapping(path = "/sendMQMessage")
 	public String sendMQMessages(@RequestParam
-									  Map<String, String> allParams) throws IOException, NumberFormatException, MQException
+		Map<String, String> allParams) throws IOException, NumberFormatException, MQException
 	{
 		MqManagerConnection mq = MqManagerConnection.connect(allParams.get("host"), allParams.get("manager"),
 				allParams.get("channel"), Integer.parseInt(allParams.get("port")), allParams.get("queue"));

@@ -2,17 +2,26 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="ISO-8859-1">
-<title>Insert title here</title>
+<title>MQ Send Message</title>
 </head>
+<link href="mqSend.css" rel="stylesheet">
 <body>
 Welcome!
 <form action="/sendMessage" method="GET">
-	Host: <input type="text" name="host" value="cs-v-mqdev1.champ.aero"/><br>
-	Manager: <input type="text" name="manager" value="CCSLUXD1"/><br>
-	Channel: <input type="text" name="channel" value="CS.SVRCONN"/><br>
-	Port: <input type="text" name="port" value="1414"/><br>
-	Queue: <input type="text" name="queue" value="CS.DEV.TEST2.OUT"/> <br>
-	Message: <textarea rows="5" cols="50" name="msgText"></textarea><br>
+	<label>Host:</label><input type="text" name="host" value="cs-v-mqdev1.champ.aero"/><br>
+	<label>Manager:</label> <input type="text" name="manager" value="CCSLUXD1"/><br>
+	<label>Channel:</label> <input type="text" name="channel" value="CS.SVRCONN"/><br>
+	<label>Port:</label> <input type="text" name="port" value="1414"/><br>
+	<label>Queue:</label><input type="text" name="queue" value="CS.DEV.TEST2.OUT"/> <br>
+	 
+
+	<label for="textArea">Message:</label>
+	<label for="checkbox">Send Multiple DN Messages<input type="checkbox" id="isMultipleEnabled" name="isMultipleEnabled"></label>
+	<br>
+    <div class="textarea-wrapper">
+  		<textarea rows="5" cols="50" name="msgText"></textarea>
+	</div><br>
+	
 	
     <input type="submit" name="name" value="Send" />
 </form>
