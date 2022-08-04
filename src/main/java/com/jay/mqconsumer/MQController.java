@@ -8,6 +8,7 @@ import com.jay.mqconsumer.service.util.MqManagerConnection;
 
 import org.springframework.beans.factory.annotation.Value;
 
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,7 +27,7 @@ import java.util.Map;
  *
  * @version  $Revision$, $Date$
  */
-@RestController
+@Controller
 public class MQController
 {
 	//~ Instance fields --------------------------
@@ -81,34 +82,7 @@ public class MQController
 
 		return "displayMessages";
 	}
-	
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return
-	 */
-	@GetMapping("/getMqMessages")
-	private List<String> retrievedMqMes()
-	{
-		List<String> messages = new ArrayList<String>();
 
-		try
-		{
-			MqManagerConnection mq = MqManagerConnection.connect(host, manager, channel, port, queue);
-			messages = retrieveMqMSGS(mq, messages);
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-		catch (MQException e)
-		{
-			throw new RuntimeException(e);
-		}
-
-		return messages;
-	}
-	
 	/**
 	 * DOCUMENT ME!
 	 *
@@ -176,9 +150,10 @@ public class MQController
 
 		return "msgSent";
 	}
-	
+
 	/**
-	 * DOCUMENT ME!
+	 *
+	 * Purge MQ Messages
 	 *
 	 * @param   allParams
 	 * @return
@@ -186,16 +161,29 @@ public class MQController
 	 * @throws  NumberFormatException
 	 * @throws  MQException
 	 */
-	@GetMapping(path = "/sendMQMessage")
-	public String sendMQMessages(@RequestParam
-		Map<String, String> allParams) throws IOException, NumberFormatException, MQException
+	@GetMapping({"/purgeMessages"})
+	public String purgeMessages(@RequestParam
+		Map<String, String> allParams, Model model) throws IOException, NumberFormatException, MQException
 	{
 		MqManagerConnection mq = MqManagerConnection.connect(allParams.get("host"), allParams.get("manager"),
 				allParams.get("channel"), Integer.parseInt(allParams.get("port")), allParams.get("queue"));
-		mq.send(allParams.get("msgText"));
+		boolean keepReading = true;
+		List<String> messages = new ArrayList<>();
+
+		while (keepReading) {
+			String message = null;
+			try {
+				message = mq.read();
+			} catch (MQException e) {
+				keepReading = false;
+			}
+			messages.add(message);
+		}
+
+		model.addAttribute("messages", messages);
+		model.addAttribute("total", Integer.valueOf(messages.size()));
 		mq.commit();
 		mq.disconnect();
-
-		return "success";
+		return "deletedMessages";
 	}
 }
