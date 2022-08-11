@@ -8,10 +8,10 @@ textarea {
   background-attachment: local;
   background-repeat: no-repeat;
   padding-left: 35px;
-  padding-top: 10px;
+  padding-top: 11px;
   border-color: #ccc;
   font-size: 13px;
-  line-height: 32px;
+  height: 160px;
 }
 
 .textarea-wrapper {
