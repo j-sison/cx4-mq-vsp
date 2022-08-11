@@ -9,11 +9,11 @@ import com.jay.mqconsumer.service.util.MqManagerConnection;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Controller;
+
 import org.springframework.ui.Model;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
@@ -82,7 +82,7 @@ public class MQController
 
 		return "displayMessages";
 	}
-
+	
 	/**
 	 * DOCUMENT ME!
 	 *
@@ -150,9 +150,8 @@ public class MQController
 
 		return "msgSent";
 	}
-
+	
 	/**
-	 *
 	 * Purge MQ Messages
 	 *
 	 * @param   allParams
@@ -161,7 +160,7 @@ public class MQController
 	 * @throws  NumberFormatException
 	 * @throws  MQException
 	 */
-	@GetMapping({"/purgeMessages"})
+	// @GetMapping({"/purgeMessages"})
 	public String purgeMessages(@RequestParam
 		Map<String, String> allParams, Model model) throws IOException, NumberFormatException, MQException
 	{
@@ -170,11 +169,15 @@ public class MQController
 		boolean keepReading = true;
 		List<String> messages = new ArrayList<>();
 
-		while (keepReading) {
+		while (keepReading)
+		{
 			String message = null;
-			try {
+			try
+			{
 				message = mq.read();
-			} catch (MQException e) {
+			}
+			catch (MQException e)
+			{
 				keepReading = false;
 			}
 			messages.add(message);
@@ -184,6 +187,7 @@ public class MQController
 		model.addAttribute("total", Integer.valueOf(messages.size()));
 		mq.commit();
 		mq.disconnect();
+
 		return "deletedMessages";
 	}
 }
