@@ -5,15 +5,15 @@ import com.jay.mqconsumer.service.util.MQUtil;
 import com.jay.mqconsumer.service.util.MqManagerConnection;
 import com.jay.mqconsumer.service.util.MqSenderUtil;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 
 
 /**
@@ -52,13 +52,16 @@ public class MQRestController
 	 * @return
 	 */
 	@GetMapping("/getMqMessages")
-	private List<String> retrievedMqMes()
+	private List<String> retrievedMqMessages(@RequestParam
+											Map<String, String> allParams) throws IOException, NumberFormatException, MQException
 	{
 		List<String> messages = new ArrayList<String>();
 
 		try
 		{
-			MqManagerConnection mq = MqManagerConnection.connect(host, manager, channel, port, queue);
+			MqManagerConnection mq = MqManagerConnection.connect(allParams.get("host"), allParams.get("manager"),
+					allParams.get("channel"), Integer.parseInt(allParams.get("port")), allParams.get("queue"));
+
 			messages = MQUtil.retrieveMqMSGS(mq, messages);
 		}
 		catch (IOException e)
@@ -83,14 +86,15 @@ public class MQRestController
 	 * @throws  NumberFormatException
 	 * @throws  MQException
 	 */
-	@GetMapping(path = "/sendMQMessage")
+	@GetMapping(path = "/sendMQMessage", produces= MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
 	public String sendMQMessages(@RequestParam
 		Map<String, String> allParams) throws IOException, NumberFormatException, MQException
 	{
 		MqManagerConnection mq = MqManagerConnection.connect(allParams.get("host"), allParams.get("manager"),
 				allParams.get("channel"), Integer.parseInt(allParams.get("port")), allParams.get("queue"));
 
-		if (allParams.get("isMultipleEnabled") != null)
+		if (allParams.get("isMultipleEnabled") != null && allParams.get("isMultipleEnabled").equals("true"))
 		{
 			for (String msg : MqSenderUtil.convertMsgToList(allParams.get("msgText")))
 			{
@@ -104,7 +108,7 @@ public class MQRestController
 		mq.commit();
 		mq.disconnect();
 
-		return "success";
+		return "{\"res\":\"success\"}";
 	}
 
 	@GetMapping({"/purgeMessages"})
