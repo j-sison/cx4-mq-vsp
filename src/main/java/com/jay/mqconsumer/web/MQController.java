@@ -1,10 +1,10 @@
-package com.jay.mqconsumer;
+package com.jay.mqconsumer.web;
 
-import static com.jay.mqconsumer.service.util.MqSenderUtil.convertMsgToList;
+import static com.jay.mqconsumer.business.logic.util.MqSenderUtil.convertMsgToList;
 
 import com.ibm.mq.MQException;
 
-import com.jay.mqconsumer.service.util.MqManagerConnection;
+import com.jay.mqconsumer.business.logic.util.MqManagerConnection;
 
 import org.springframework.beans.factory.annotation.Value;
 

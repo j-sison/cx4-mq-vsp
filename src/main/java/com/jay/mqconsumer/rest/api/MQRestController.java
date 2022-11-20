@@ -1,16 +1,24 @@
-package com.jay.mqconsumer;
+package com.jay.mqconsumer.rest.api;
 
 import com.ibm.mq.MQException;
-import com.jay.mqconsumer.service.util.MQUtil;
-import com.jay.mqconsumer.service.util.MqManagerConnection;
-import com.jay.mqconsumer.service.util.MqSenderUtil;
+import com.jay.mqconsumer.business.logic.service.MqMessageService;
+import com.jay.mqconsumer.business.logic.service.SequenceGeneratorService;
+import com.jay.mqconsumer.business.logic.util.MQUtil;
+import com.jay.mqconsumer.business.logic.util.MqManagerConnection;
+import com.jay.mqconsumer.business.logic.util.MqSenderUtil;
+import com.jay.mqconsumer.payload.dto.MqMessageDto;
+import com.jay.mqconsumer.data.entity.MqMessage;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -44,8 +52,20 @@ public class MQRestController
 	/**  */
 	@Value("${cust.mq.queue}")
 	private String queue;
+
+	@Autowired
+	private ModelMapper modelMapper;
+
+	@Autowired
+	private SequenceGeneratorService sequenceGenerator;
+
+	//@Autowired
+	private MqMessageService mqMessageService;
 	//~ Methods ----------------------------------
-	
+	public MQRestController(MqMessageService mqMessageService){
+		super();
+		this.mqMessageService = mqMessageService;
+	}
 	/**
 	 * DOCUMENT ME!
 	 *
@@ -89,8 +109,7 @@ public class MQRestController
 	@GetMapping(path = "/sendMQMessage", produces= MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public String sendMQMessages(@RequestParam
-		Map<String, String> allParams) throws IOException, NumberFormatException, MQException
-	{
+		Map<String, String> allParams) throws IOException, NumberFormatException, MQException, ParseException {
 		MqManagerConnection mq = MqManagerConnection.connect(allParams.get("host"), allParams.get("manager"),
 				allParams.get("channel"), Integer.parseInt(allParams.get("port")), allParams.get("queue"));
 
@@ -99,11 +118,16 @@ public class MQRestController
 			for (String msg : MqSenderUtil.convertMsgToList(allParams.get("msgText")))
 			{
 				mq.send(msg);
+				MqMessageDto mqMessageDto = new MqMessageDto(0, msg);
+				saveMqMessage(mqMessageDto);
 			}
 		}
 		else
 		{
-			mq.send(allParams.get("msgText"));
+			String message = allParams.get("msgText");
+			mq.send(message);
+			MqMessageDto mqMessageDto = new MqMessageDto(0, message);
+			saveMqMessage(mqMessageDto);
 		}
 		mq.commit();
 		mq.disconnect();
@@ -133,5 +157,41 @@ public class MQRestController
 		mq.commit();
 		mq.disconnect();
 		return "deletedMessages";
+	}
+
+	/**
+	 * DOCUMENT ME!
+	 *
+	 * @return
+	 */
+	@GetMapping(path = "/getAllMqMessages", produces= MediaType.APPLICATION_JSON_VALUE)
+	private List <MqMessage> getAllMQMessages( ) {
+		return getMqMessages();
+	}
+
+	private void saveMqMessage(MqMessageDto mqMessageDto) throws ParseException {
+		mqMessageService.createMessage(convertToEntity(mqMessageDto));
+	}
+
+
+	private List<MqMessage> getMqMessages() {
+		List<MqMessage> mqMessages = mqMessageService.getMqMessages();
+		List<MqMessageDto> mqMessagesDto = Collections.emptyList();
+
+		return mqMessageService.getMqMessages();
+	}
+
+	private MqMessageDto convertToDto(MqMessage mqMessage) {
+		MqMessageDto mqMessageDto = modelMapper.map(mqMessage, MqMessageDto.class);
+
+		return mqMessageDto;
+	}
+
+	private MqMessage convertToEntity(MqMessageDto mqMessageDto) throws ParseException {
+		MqMessage mqMessage = modelMapper.map(mqMessageDto, MqMessage.class);
+		mqMessage.setId(sequenceGenerator.getSequenceNumber(MqMessage.SEQUENCE_NAME));
+
+
+		return mqMessage;
 	}
 }

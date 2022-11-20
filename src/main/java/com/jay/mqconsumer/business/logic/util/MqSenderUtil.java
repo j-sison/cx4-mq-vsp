@@ -1,4 +1,4 @@
-package com.jay.mqconsumer.service.util;
+package com.jay.mqconsumer.business.logic.util;
 
 import java.util.ArrayList;
 import java.util.List;
