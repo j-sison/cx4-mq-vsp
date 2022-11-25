@@ -1,4 +1,4 @@
-package com.jay.mqconsumer.service.util;
+package com.jay.mqconsumer.business.logic.util;
 
 import com.ibm.mq.MQException;
 import com.ibm.mq.MQGetMessageOptions;

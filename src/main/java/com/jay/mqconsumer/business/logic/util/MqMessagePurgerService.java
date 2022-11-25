@@ -1,11 +1,9 @@
-package com.jay.mqconsumer.service;
+package com.jay.mqconsumer.business.logic.util;
 
 import com.ibm.mq.MQException;
 import com.ibm.mq.MQQueue;
 import com.ibm.mq.MQQueueManager;
 import com.ibm.mq.constants.MQConstants;
-
-import com.jay.mqconsumer.service.util.MqReaderUtil;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
