@@ -86,6 +86,87 @@ public class MQController
 	/**
 	 * DOCUMENT ME!
 	 *
+	 * @param   allParams
+	 * @param   model
+	 * @return
+	 * @throws  IOException
+	 * @throws  NumberFormatException
+	 * @throws  MQException
+	 */
+	@GetMapping("/selectivePurge")
+	public String selectivePurge(@RequestParam
+		Map<String, String> allParams, Model model) throws IOException, NumberFormatException, MQException
+	{
+		MqManagerConnection mq = MqManagerConnection.connect(allParams.get("host"), allParams.get("manager"),
+				allParams.get("channel"), Integer.parseInt(allParams.get("port")), allParams.get("queue"));
+
+		String textToPurge = allParams.get("textToPurge");
+		int maxDeleteCount = Integer.parseInt(allParams.get("deleteCount"));
+		int maxSkipCount = Integer.parseInt(allParams.get("skipCount"));
+		List<String> purgedMessages = new ArrayList<String>();
+		List<String> savedMessages = new ArrayList<String>();
+
+		int skipCount = 0;
+		int deleteCount = 0;
+		boolean keepReading = true;
+		while (keepReading)
+		{
+			String message = null;
+			try
+			{
+				message = mq.read();
+				boolean isSkip = false;
+
+				if (message.contains(textToPurge) && (maxSkipCount != 0) && (skipCount < maxSkipCount))
+				{
+					isSkip = true;
+					skipCount++;
+				}
+				if (message.contains(textToPurge) && !((maxDeleteCount != 0) && (deleteCount >= maxDeleteCount))
+					&& !isSkip)
+				{
+					purgedMessages.add(message);
+					deleteCount++;
+				}
+				else
+				{
+					savedMessages.add(message);
+				}
+			}
+			catch (MQException e)
+			{
+				if (e.reasonCode == 2033)
+				{
+					// LOGGER.trace("No more MQ message found");
+				}
+				keepReading = false;
+			}
+		}
+
+		model.addAttribute("messages", purgedMessages);
+		model.addAttribute("total", purgedMessages.size());
+		model.addAttribute("savedCount", savedMessages.size());
+
+		mq.commit();
+		mq.disconnect();
+
+		mq = MqManagerConnection.connect(allParams.get("host"), allParams.get("manager"),
+				allParams.get("channel"), Integer.parseInt(allParams.get("port")), allParams.get("queue"));
+
+		for (String msg : savedMessages)
+		{
+			mq.send(msg);
+		}
+
+		mq.commit();
+		mq.disconnect();
+
+		return "deletedMessages";
+	}
+	
+	/**
+	 * DOCUMENT ME!
+	 *
 	 * @param   mq
 	 * @param   messages
 	 * @return

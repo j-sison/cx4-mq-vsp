@@ -28,6 +28,17 @@ public class MqManagerConnection
 	/**  */
 	private MQQueueManager mqManager;
 	//~ Methods ----------------------------------
+
+	/**
+	 * DOCUMENT ME!
+	 *
+	 * @return
+	 */
+	public MQQueue getInQueue()
+	{
+		return inQueue;
+	}
+	
 	/**
 	 * DOCUMENT ME!
 	 *

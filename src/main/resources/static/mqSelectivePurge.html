@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="ISO-8859-1">
+    <title>Insert title here</title>
+</head>
+<body>
+Welcome!
+<form action="/selectivePurge" method="GET">
+    Host: <input type="text" name="host" value="cs-v-mqdev1.champ.aero"/><br>
+    Manager: <input type="text" name="manager" value="CCSLUXD1"/><br>
+    Channel: <input type="text" name="channel" value="CS.SVRCONN"/><br>
+    Port: <input type="text" name="port" value="1414"/><br>
+    Queue: <input type="text" name="queue" value="CS.DEV.TEST2.OUT"/> <br>
+    Text Criteria: <input type="text" name="textToPurge" value="160-49153860"/> <br>
+    Delete count: <input type="text" name="deleteCount" value="0"/> <br>
+    Skip count: <input type="text" name="skipCount" value="0"/> <br>
+
+	<br><br>
+	Text Criteria: If message contains this text, it will be deleted.<br>
+	Delete Count: Only delete records up to this count<br>
+	Skip count: Skip matching records up to this count<br>
+    <input type="submit" name="name" value="Purge" />
+</form>
+</body>
+</html>

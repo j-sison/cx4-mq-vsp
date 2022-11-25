@@ -6,6 +6,7 @@
 </head>
 <body>
 <p th:text="'Deleted messages (' + ${total} + ' messages)'"></p>
+<p th:text="'Saved messages (' + ${savedCount} + ' messages)'"></p>
 
 <div th:each="message: ${messages}">
     <div>
