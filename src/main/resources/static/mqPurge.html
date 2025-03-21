@@ -1,19 +1,50 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="ISO-8859-1">
-    <title>Insert title here</title>
+    <meta charset="UTF-8">
+    <title>MQ Consumer Connection</title>
+    <link href="mqPurge.css" rel="stylesheet">
 </head>
 <body>
-Welcome!
-<form action="/purgeMessages" method="GET">
-    Host: <input type="text" name="host" value="cs-v-mqdev1.champ.aero"/><br>
-    Manager: <input type="text" name="manager" value="CCSLUXD1"/><br>
-    Channel: <input type="text" name="channel" value="CS.SVRCONN"/><br>
-    Port: <input type="text" name="port" value="1414"/><br>
-    Queue: <input type="text" name="queue" value="CS.DEV.TEST2.OUT"/> <br>
-
-    <input type="submit" name="name" value="Purge" />
-</form>
+    <div class="container">
+        <h2>MQ Purge Messages</h2>
+        <form action="/mq-consumer/purgeMessages" method="GET" onsubmit="return confirmPurge()">
+            <div class="form-group">
+                <label for="host">Host:</label>
+                <input type="text" id="host" name="host" value="cs-v-mqdev1.champ.aero"/>
+            </div>
+            <div class="form-group">
+                <label for="manager">Manager:</label>
+                <input type="text" id="manager" name="manager" value="CCSLUXD1"/>
+            </div>
+            <div class="form-group">
+                <label for="channel">Channel:</label>
+                <input type="text" id="channel" name="channel" value="CS.SVRCONN"/>
+            </div>
+            <div class="form-group">
+                <label for="port">Port:</label>
+                <input type="text" id="port" name="port" value="1414"/>
+            </div>
+            <div class="form-group">
+                <label for="queue">Queue:</label>
+                <input type="text" id="queue" name="queue" value="CS.DEV.TEST2.OUT"/>
+            </div>
+            
+            <div class="button-group">
+                <input type="submit" name="name" class="submit-btn" value="Purge" />
+                <button type="button" class="home-btn" onclick="goHome()">Home</button>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        function goHome() {
+            window.location.href = "/mq-consumer/";
+        }
+        
+        function confirmPurge() {
+            return confirm("Are you sure you want to purge all messages? This action cannot be undone.");
+        }
+    </script>
 </body>
 </html>

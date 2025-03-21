@@ -70,9 +70,7 @@ public class MQController
 		MqManagerConnection mq = MqManagerConnection.connect(allParams.get("host"), allParams.get("manager"),
 				allParams.get("channel"), Integer.parseInt(allParams.get("port")), allParams.get("queue"));
 
-		List<String> messages = new ArrayList<String>();
-
-		messages = retrieveMqMSGS(mq, messages);
+		List<String> messages = retrieveMqMSGS(mq);
 
 		model.addAttribute("messages", messages);
 		model.addAttribute("total", messages.size());
@@ -81,6 +79,44 @@ public class MQController
 		mq.disconnect();
 
 		return "displayMessages";
+	}
+	
+	/**
+	 * DOCUMENT ME!
+	 *
+	 * @param   mq
+	 * @param   messages
+	 * @return
+	 * @throws  IOException
+	 */
+	private List<String> retrieveMqMSGS(MqManagerConnection mq) throws IOException
+	{
+		List<String> messages = new ArrayList<>();
+
+		boolean keepReading = true;
+
+		while (keepReading)
+		{
+			String message = null;
+			try
+			{
+				message = mq.read();
+			}
+			catch (MQException e)
+			{
+				if (e.reasonCode == 2033)
+				{
+					// LOGGER.trace("No more MQ message found");
+				}
+				keepReading = false;
+			}
+			if (message != null)
+			{
+				messages.add(message);
+			}
+		}
+
+		return messages;
 	}
 	
 	/**
@@ -167,41 +203,6 @@ public class MQController
 	/**
 	 * DOCUMENT ME!
 	 *
-	 * @param   mq
-	 * @param   messages
-	 * @return
-	 * @throws  IOException
-	 */
-	private List<String> retrieveMqMSGS(MqManagerConnection mq, List<String> messages) throws IOException
-	{
-		boolean keepReading = true;
-		while (keepReading)
-		{
-			String message = null;
-			try
-			{
-				message = mq.read();
-			}
-			catch (MQException e)
-			{
-				if (e.reasonCode == 2033)
-				{
-					// LOGGER.trace("No more MQ message found");
-				}
-				keepReading = false;
-			}
-			if (message != null)
-			{
-				messages.add(message);
-			}
-		}
-
-		return messages;
-	}
-	
-	/**
-	 * DOCUMENT ME!
-	 *
 	 * @return
 	 * @throws  MQException
 	 * @throws  IOException
@@ -216,20 +217,27 @@ public class MQController
 
 		if (allParams.get("isMultipleEnabled") != null)
 		{
-			for (String msg : convertMsgToList(allParams.get("msgText")))
+			List<String> messages = convertMsgToList(allParams.get("msgText"));
+			for (String message : messages)
 			{
-				mq.send(msg);
+				mq.send(message);
 			}
+			model.addAttribute("messages", messages);
+			model.addAttribute("sentCount", messages.size());
 		}
 		else
 		{
-			mq.send(allParams.get("msgText"));
+			String message = allParams.get("msgText");
+			mq.send(message);
+
+			model.addAttribute("messages", message);
+			model.addAttribute("sentCount", 1);
 		}
 
 		mq.commit();
 		mq.disconnect();
 
-		return "msgSent";
+		return "sentMessages";
 	}
 	
 	/**
@@ -241,7 +249,7 @@ public class MQController
 	 * @throws  NumberFormatException
 	 * @throws  MQException
 	 */
-	// @GetMapping({"/purgeMessages"})
+	@GetMapping({ "/purgeMessages" })
 	public String purgeMessages(@RequestParam
 		Map<String, String> allParams, Model model) throws IOException, NumberFormatException, MQException
 	{

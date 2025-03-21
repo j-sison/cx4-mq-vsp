@@ -1,29 +1,69 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="ISO-8859-1">
-<title>MQ Send Message</title>
+    <meta charset="UTF-8">
+    <title>MQ Consumer Connection</title>
+	<link href="mqSend.css" rel="stylesheet">
 </head>
-<link href="mqSend.css" rel="stylesheet">
 <body>
-Welcome!
-<form action="/mq-consumer/sendMessage" method="GET">
-	<label>Host:</label><input type="text" name="host" value="cs-v-mqdev1.champ.aero"/><br>
-	<label>Manager:</label> <input type="text" name="manager" value="CCSLUXD1"/><br>
-	<label>Channel:</label> <input type="text" name="channel" value="CS.SVRCONN"/><br>
-	<label>Port:</label> <input type="text" name="port" value="1414"/><br>
-	<label>Queue:</label><input type="text" name="queue" value="CS.DEV.TEST2.OUT"/> <br>
-	 
+    <div class="container">
+        <h2>MQ Send Message</h2>
+        <form action="/mq-consumer/sendMessage" method="GET">
+            <label>Host:</label>
+            <input type="text" name="host" value="cs-v-mqdev1.champ.aero"/>
 
-	<label for="textArea">Message:</label>
-	<label for="checkbox">Send Multiple DN Messages<input type="checkbox" id="isMultipleEnabled" name="isMultipleEnabled"></label>
-	<br>
-    <div class="textarea-wrapper">
-  		<textarea rows="5" cols="50" name="msgText"></textarea>
-	</div><br>
-	
-	
-    <input type="submit" name="name" value="Send" />
-</form>
+            <label>Manager:</label>
+            <input type="text" name="manager" value="CCSLUXD1"/>
+
+            <label>Channel:</label>
+            <input type="text" name="channel" value="CS.SVRCONN"/>
+
+            <label>Port:</label>
+            <input type="text" name="port" value="1414"/>
+
+            <label>Queue:</label>
+            <input type="text" name="queue" value="CS.DEV.TEST2.OUT"/>
+
+            <label for="textArea">Message:</label>
+
+            <div class="textarea-container">
+                <div class="line-numbers" id="lineNumbers">1</div>
+                <textarea name="msgText" class="message-box" id="messageBox" oninput="updateLineNumbers()" onscroll="syncScroll()" required></textarea>
+            </div>
+            
+            <div class="checkbox-container">
+                <input type="checkbox" id="isMultipleEnabled" name="isMultipleEnabled">
+                <label for="isMultipleEnabled">Send Multiple DN Messages</label>
+            </div>
+
+            <div class="button-group">
+                <input type="submit" name="name" class="submit-btn" value="Send" />
+                <button type="button" class="home-btn" onclick="goHome()">Home</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+	    function goHome() {
+	        window.location.href = "/mq-consumer/";
+	    }
+	    
+        function updateLineNumbers() {
+            const textarea = document.getElementById("messageBox");
+            const lineNumbers = document.getElementById("lineNumbers");
+            const lines = textarea.value.split("\n").length;
+            let numbersHTML = "";
+            for (let i = 1; i <= lines; i++) {
+                numbersHTML += i + "<br>";
+            }
+            lineNumbers.innerHTML = numbersHTML;
+        }
+
+        function syncScroll() {
+            const textarea = document.getElementById("messageBox");
+            const lineNumbers = document.getElementById("lineNumbers");
+            lineNumbers.scrollTop = textarea.scrollTop;
+        }
+    </script>
 </body>
 </html>
