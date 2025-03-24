@@ -1,7 +1,9 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/messageTable :: head"></head>
+<head th:replace="messageTable :: head(title='MQ Show Messages')">
+    <title>MQ Show Messages</title>
+</head>
 <body>
-    <div th:replace="fragments/messageTable :: messageTable('All Messages', ${total}, ${messages})"></div>
+    <div th:replace="messageTable :: messageTable('All Messages', ${total}, ${messages})"></div>
 </body>
 </html>
