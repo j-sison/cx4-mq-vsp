@@ -139,8 +139,8 @@ public class MQController
 		String textToPurge = allParams.get("textToPurge");
 		int maxDeleteCount = Integer.parseInt(allParams.get("deleteCount"));
 		int maxSkipCount = Integer.parseInt(allParams.get("skipCount"));
-		List<String> purgedMessages = new ArrayList<String>();
-		List<String> savedMessages = new ArrayList<String>();
+		List<String> purgedMessages = new ArrayList<>();
+		List<String> savedMessages = new ArrayList<>();
 
 		int skipCount = 0;
 		int deleteCount = 0;
@@ -180,8 +180,8 @@ public class MQController
 		}
 
 		model.addAttribute("messages", purgedMessages);
-		model.addAttribute("total", purgedMessages.size());
-		model.addAttribute("savedCount", savedMessages.size());
+		model.addAttribute("purgedTotal", purgedMessages.size());
+		// model.addAttribute("savedCount", savedMessages.size());
 
 		mq.commit();
 		mq.disconnect();
@@ -223,7 +223,7 @@ public class MQController
 				mq.send(message);
 			}
 			model.addAttribute("messages", messages);
-			model.addAttribute("sentCount", messages.size());
+			model.addAttribute("sentTotal", messages.size());
 		}
 		else
 		{
@@ -231,7 +231,7 @@ public class MQController
 			mq.send(message);
 
 			model.addAttribute("messages", message);
-			model.addAttribute("sentCount", 1);
+			model.addAttribute("sentTotal", 1);
 		}
 
 		mq.commit();
@@ -269,11 +269,15 @@ public class MQController
 			{
 				keepReading = false;
 			}
+			if (message == null)
+			{
+				continue;
+			}
 			messages.add(message);
 		}
 
 		model.addAttribute("messages", messages);
-		model.addAttribute("total", Integer.valueOf(messages.size()));
+		model.addAttribute("purgedTotal", Integer.valueOf(messages.size()));
 		mq.commit();
 		mq.disconnect();
 
