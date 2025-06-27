@@ -283,4 +283,83 @@ public class MQController
 
 		return "deletedMessages";
 	}
+
+	@GetMapping("/moveMessages")
+	public String moveMessages(@RequestParam Map<String, String> allParams, Model model) throws IOException, NumberFormatException, MQException {
+		// Connect to source queue
+		MqManagerConnection sourceMq = MqManagerConnection.connect(
+			allParams.get("host"),
+			allParams.get("manager"),
+			allParams.get("channel"),
+			Integer.parseInt(allParams.get("port")),
+			allParams.get("sourceQueue")
+		);
+
+		// Connect to destination queue
+		MqManagerConnection destMq = MqManagerConnection.connect(
+			allParams.get("destinationHost"),
+			allParams.get("destinationManager"),
+			allParams.get("destinationChannel"),
+			Integer.parseInt(allParams.get("destinationPort")),
+			allParams.get("destinationQueue")
+		);
+
+		String textToMove = allParams.get("textToMove");
+		int maxMoveCount = 0;
+		int maxSkipCount = 0;
+		try {
+			maxMoveCount = Integer.parseInt(allParams.getOrDefault("moveCount", "0"));
+			maxSkipCount = Integer.parseInt(allParams.getOrDefault("skipCount", "0"));
+		} catch (Exception e) {
+			// ignore, use 0
+		}
+		List<String> movedMessages = new ArrayList<>();
+		List<String> skippedMessages = new ArrayList<>();
+		int skipCount = 0;
+		int moveCount = 0;
+		boolean keepReading = true;
+		while (keepReading) {
+			String message = null;
+			try {
+				message = sourceMq.read();
+				boolean isSkip = false;
+				if (message != null && textToMove != null && message.contains(textToMove) && (maxSkipCount != 0) && (skipCount < maxSkipCount)) {
+					isSkip = true;
+					skipCount++;
+				}
+				if (message != null && textToMove != null && message.contains(textToMove) && !((maxMoveCount != 0) && (moveCount >= maxMoveCount)) && !isSkip) {
+					destMq.send(message);
+					movedMessages.add(message);
+					moveCount++;
+				} else if (message != null) {
+					skippedMessages.add(message);
+				}
+			} catch (MQException e) {
+				keepReading = false;
+			}
+		}
+		sourceMq.commit();
+		sourceMq.disconnect();
+		destMq.commit();
+		destMq.disconnect();
+
+		// Restore skipped messages to source queue (preserve all non-moved messages)
+		sourceMq = MqManagerConnection.connect(
+			allParams.get("host"),
+			allParams.get("manager"),
+			allParams.get("channel"),
+			Integer.parseInt(allParams.get("port")),
+			allParams.get("sourceQueue")
+		);
+		for (String msg : skippedMessages) {
+			sourceMq.send(msg);
+		}
+		sourceMq.commit();
+		sourceMq.disconnect();
+
+		model.addAttribute("messages", movedMessages);
+		model.addAttribute("movedTotal", movedMessages.size());
+		model.addAttribute("skippedTotal", skippedMessages.size());
+		return "movedMessages";
+	}
 }

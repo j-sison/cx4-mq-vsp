@@ -1,0 +1,9 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="messageTable :: head(title='MQ Move Messages')">
+    <title>MQ Moved Messages</title>
+</head>
+<body>
+    <div th:replace="messageTable :: messageTable('Moved Messages', ${movedTotal}, ${messages})"></div>
+</body>
+</html>

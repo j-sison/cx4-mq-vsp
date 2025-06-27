@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MQ Move Messages</title>
+    <link href="mqMoveMessages.css" rel="stylesheet">
+</head>
+<body>
+    <div class="center-viewport">
+        <div class="move-containers-wrapper" style="display: flex; flex-direction: row; justify-content: center; align-items: flex-start; gap: 32px; width: 100%; max-width: 900px; margin: 40px auto;">
+            <div class="move-container">
+                <h2>MQ Source Queue</h2>
+                <form id="sourceForm">
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="host">Host:</label>
+                            <input type="text" id="host" name="host" value="cs-v-mqdev1.champ.aero"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="manager">Manager:</label>
+                            <input type="text" id="manager" name="manager" value="CCSLUXD1"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="channel">Channel:</label>
+                            <input type="text" id="channel" name="channel" value="CS.SVRCONN"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="port">Port:</label>
+                            <input type="text" id="port" name="port" value="1414"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="sourceQueue">Queue:</label>
+                            <input type="text" id="sourceQueue" name="sourceQueue" list="sourceQueues"/>
+                            <datalist id="sourceQueues">
+                                <option value="CS.DEV.TEST2.OUT"></option>
+                            </datalist>
+                        </div>
+                        <div class="form-group">
+                            <label for="textToMove">Text Criteria:</label>
+                            <input type="text" id="textToMove" name="textToMove" placeholder="e.g. 160-49153860" required>
+                            <small>If message contains this text, it will be moved.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="moveCount">Move Count:</label>
+                            <input type="number" id="moveCount" name="moveCount" value="0" required>
+                            <small>Only move records up to this count.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="skipCount">Skip Count:</label>
+                            <input type="number" id="skipCount" name="skipCount" value="0" required>
+                            <small>Skip matching records up to this count.</small>
+                        </div>
+                    </div>
+                </form>
+                <div id="moveResult"></div>
+            </div>
+            <div class="move-container">
+                <h2>MQ Destination Queue</h2>
+                <form id="destinationForm" action="/mq-consumer/moveMessages" method="GET" onsubmit="return confirmMove()">
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="host">Host:</label>
+                            <input type="text" id="destinationHost" name="destinationHost" value="cs-v-mqdev1.champ.aero"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="manager">Manager:</label>
+                            <input type="text" id="destinationManager" name="destinationManager" value="CCSLUXD1"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="channel">Channel:</label>
+                            <input type="text" id="destinationChannel" name="destinationChannel" value="CS.SVRCONN"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="port">Port:</label>
+                            <input type="text" id="destinationPort" name="destinationPort" value="1414"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="sourceQueue">Queue:</label>
+                            <input type="text" id="destinationQueue" name="destinationQueue" list="sourceQueues"/>
+                            <datalist id="destinationQueues">
+                                <option value="CS.DEV.TEST2.OUT"></option>
+                            </datalist>
+                        </div>
+                        <div class="button-group">
+                            <input type="submit" class="submit-btn" value="Move Message(s)">
+                            <button type="button" class="home-btn" onclick="goHome()">Home</button>
+                        </div>
+                    </div>
+                </form>
+                <div id="moveResult"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function goHome() {
+            window.location.href = "/mq-consumer/";
+        }
+        function confirmMove() {
+            return confirm("Are you sure you want to move selected messages?");
+        }
+        // Merge source form values into destination form on submit
+        document.addEventListener('DOMContentLoaded', function() {
+            var forms = document.querySelectorAll('form');
+            if (forms.length >= 2) {
+                var sourceForm = forms[0];
+                var destForm = forms[1];
+                destForm.addEventListener('submit', function(e) {
+                    // Remove any previously added hidden fields
+                    var oldHiddens = destForm.querySelectorAll('.from-source');
+                    oldHiddens.forEach(function(h) { h.remove(); });
+                    // Copy values from source form
+                    var sourceFields = sourceForm.querySelectorAll('input');
+                    sourceFields.forEach(function(input) {
+                        if (input.name && input.type !== 'submit' && input.type !== 'button') {
+                            var hidden = document.createElement('input');
+                            hidden.type = 'hidden';
+                            hidden.name = input.name;
+                            hidden.value = input.value;
+                            hidden.className = 'from-source';
+                            destForm.appendChild(hidden);
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

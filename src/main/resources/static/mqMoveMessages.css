@@ -1,0 +1,157 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    width: 100vw;
+    height: 100vh;
+    overflow-x: hidden;
+}
+
+.center-viewport {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100vw;
+}
+
+.move-containers-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 48px;
+    width: auto;
+    margin: 0;
+}
+
+.move-container {
+    background: #fff;
+    max-width: 400px;
+    width: 350px;
+    min-height: 320px;
+    margin: 0;
+    padding: 30px 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.move-container h2 {
+    margin-top: 0;
+    color: #222;
+    text-align: center;
+    font-size: 1.4em;
+}
+
+.form-group {
+    margin-bottom: 12px;
+}
+
+.move-container label {
+    display: block;
+    margin-bottom: 4px;
+    color: #222;
+    font-weight: bold;
+}
+
+.move-container input[type="text"],
+.move-container input[type="number"] {
+    width: 100%;
+    padding: 7px;
+    margin-bottom: 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 15px;
+}
+
+.move-container button {
+    width: 100%;
+    padding: 8px;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 15px;
+    cursor: pointer;
+    margin-top: 0;
+}
+
+.move-container button:hover {
+    background: #0056b3;
+}
+
+.move-container button#homeBtn {
+    background: #888;
+    color: #fff;
+}
+
+.move-container button#homeBtn:hover {
+    background: #555;
+}
+
+small {
+    display: block;
+    margin-top: 5px;
+    color: #dc3545;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.button-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 18px;
+    justify-content: flex-end;
+}
+
+.submit-btn {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 18px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.submit-btn:hover {
+    background: #0056b3;
+}
+
+.button-group .home-btn {
+    background: #888 !important;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 18px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.button-group .home-btn:hover {
+    background: #555 !important;
+}
+
+@media (max-width: 900px) {
+    .center-viewport {
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+    .move-containers-wrapper {
+        flex-direction: column;
+        gap: 0;
+        width: 100%;
+        align-items: center;
+    }
+    .move-container {
+        margin-bottom: 30px;
+    }
+}
