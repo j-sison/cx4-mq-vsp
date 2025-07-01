@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>MQ Move Messages</title>
@@ -30,7 +30,7 @@
                         </div>
                         <div class="form-group">
                             <label for="sourceQueue">Queue:</label>
-                            <input type="text" id="sourceQueue" name="sourceQueue" list="sourceQueues"/>
+                            <input type="text" id="sourceQueue" name="sourceQueue" list="sourceQueues" required form="destinationForm"/>
                             <datalist id="sourceQueues">
                                 <option value="CS.DEV.TEST2.OUT"></option>
                             </datalist>
@@ -75,8 +75,8 @@
                             <input type="text" id="destinationPort" name="destinationPort" value="1414"/>
                         </div>
                         <div class="form-group">
-                            <label for="sourceQueue">Queue:</label>
-                            <input type="text" id="destinationQueue" name="destinationQueue" list="sourceQueues"/>
+                            <label for="destinationQueue">Queue:</label>
+                            <input type="text" id="destinationQueue" name="destinationQueue" list="destinationQueues" required/>
                             <datalist id="destinationQueues">
                                 <option value="CS.DEV.TEST2.OUT"></option>
                             </datalist>
@@ -91,6 +91,17 @@
             </div>
         </div>
     </div>
+    
+    <!-- Error Modal -->
+    <div id="errorModal" class="modal" style="display:none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+        <div class="modal-content" style="background: #fff; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 350px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); position: relative;">
+            <span id="closeErrorModal" style="color: #aaa; position: absolute; top: 8px; right: 16px; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <h3 style="color: #c00; margin-top: 0;">Error</h3>
+            <div id="errorModalMessage" style="margin: 16px 0; color: #333;"></div>
+            <button onclick="hideErrorModal()" style="background: #c00; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Close</button>
+        </div>
+    </div>
+    
     <script>
         function goHome() {
             window.location.href = "/mq-consumer/";
@@ -123,6 +134,49 @@
                 });
             }
         });
+        
+        // Error Modal logic
+        function showErrorModal(message) {
+            document.getElementById('errorModalMessage').textContent = message;
+            document.getElementById('errorModal').style.display = 'block';
+        }
+        function hideErrorModal() {
+            document.getElementById('errorModal').style.display = 'none';
+        }
+        if (document.getElementById('closeErrorModal')) {
+            document.getElementById('closeErrorModal').onclick = hideErrorModal;
+        }
+        // Show modal if errorMessage is present (Thymeleaf)
+        /*<![CDATA[*/
+        var errorMsg = /*[[${errorMessage}]]*/ '';
+        if (errorMsg && errorMsg !== 'null') {
+            showErrorModal(errorMsg);
+        }
+        /*]]>*/
+        
+        // Show error modal if error param is present in URL
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = new URLSearchParams(window.location.search);
+            const error = params.get('error');
+            if (error) {
+                showErrorModal(decodeURIComponent(error));
+            }
+
+            // Check if sourceQueue and destinationQueue are the same
+            var sourceQueueInput = document.getElementById('sourceQueue');
+            var destQueueInput = document.getElementById('destinationQueue');
+            var destForm = document.getElementById('destinationForm');
+            if (sourceQueueInput && destQueueInput && destForm) {
+                destForm.addEventListener('submit', function(e) {
+                    if (sourceQueueInput.value === destQueueInput.value) {
+                        e.preventDefault();
+                        showErrorModal('Source queue and destination queue cannot be the same.');
+                        return false;
+                    }
+                });
+            }
+        });
     </script>
+    
 </body>
 </html>
