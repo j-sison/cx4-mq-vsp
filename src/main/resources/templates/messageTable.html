@@ -79,6 +79,7 @@
                 </tbody>
             </table>
         </div>
+        <p th:if="${isExport} and ${count == 0}" class="no-messages">No messages to export.</p>
         <div class="home-btn-container">    
             <button class="home-btn" onclick="window.location.href = '/mq-consumer/';">Home</button>
         </div>
