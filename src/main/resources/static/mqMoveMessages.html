@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>MQ Move Messages</title>
@@ -30,7 +30,7 @@
                         </div>
                         <div class="form-group">
                             <label for="sourceQueue">Queue:</label>
-                            <input type="text" id="sourceQueue" name="sourceQueue" list="sourceQueues"/>
+                            <input type="text" id="sourceQueue" name="sourceQueue" list="sourceQueues" required form="destinationForm"/>
                             <datalist id="sourceQueues">
                                 <option value="CS.DEV.TEST2.OUT"></option>
                             </datalist>
@@ -75,8 +75,8 @@
                             <input type="text" id="destinationPort" name="destinationPort" value="1414"/>
                         </div>
                         <div class="form-group">
-                            <label for="sourceQueue">Queue:</label>
-                            <input type="text" id="destinationQueue" name="destinationQueue" list="sourceQueues"/>
+                            <label for="destinationQueue">Queue:</label>
+                            <input type="text" id="destinationQueue" name="destinationQueue" list="destinationQueues" required/>
                             <datalist id="destinationQueues">
                                 <option value="CS.DEV.TEST2.OUT"></option>
                             </datalist>
@@ -91,24 +91,38 @@
             </div>
         </div>
     </div>
+    
+    <!-- Error Modal -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <span id="closeErrorModal">&times;</span>
+            <h3>Error</h3>
+            <div id="errorModalMessage"></div>
+            <button onclick="hideErrorModal()">Close</button>
+        </div>
+    </div>
+    
     <script>
+        // Redirects user to the home page
         function goHome() {
             window.location.href = "/mq-consumer/";
         }
+        // Shows a confirmation dialog before moving messages
         function confirmMove() {
             return confirm("Are you sure you want to move selected messages?");
         }
-        // Merge source form values into destination form on submit
+        // On DOM ready, merge source form values into destination form on submit
         document.addEventListener('DOMContentLoaded', function() {
             var forms = document.querySelectorAll('form');
             if (forms.length >= 2) {
                 var sourceForm = forms[0];
                 var destForm = forms[1];
+                // When destination form is submitted, copy all input values from source form as hidden fields
                 destForm.addEventListener('submit', function(e) {
-                    // Remove any previously added hidden fields
+                    // Remove any previously added hidden fields to avoid duplicates
                     var oldHiddens = destForm.querySelectorAll('.from-source');
                     oldHiddens.forEach(function(h) { h.remove(); });
-                    // Copy values from source form
+                    // Copy values from source form inputs
                     var sourceFields = sourceForm.querySelectorAll('input');
                     sourceFields.forEach(function(input) {
                         if (input.name && input.type !== 'submit' && input.type !== 'button') {
@@ -123,6 +137,52 @@
                 });
             }
         });
+        
+        // Error Modal logic
+        // Shows the error modal with a given message
+        function showErrorModal(message) {
+            document.getElementById('errorModalMessage').textContent = message;
+            document.getElementById('errorModal').style.display = 'block';
+        }
+        // Hides the error modal
+        function hideErrorModal() {
+            document.getElementById('errorModal').style.display = 'none';
+        }
+        // Attach close button handler for error modal
+        if (document.getElementById('closeErrorModal')) {
+            document.getElementById('closeErrorModal').onclick = hideErrorModal;
+        }
+        // Show modal if errorMessage is present (Thymeleaf, for server-side rendering)
+        /*<![CDATA[*/
+        var errorMsg = /*[[${errorMessage}]]*/ '';
+        if (errorMsg && errorMsg !== 'null') {
+            showErrorModal(errorMsg);
+        }
+        /*]]>*/
+        
+        // Show error modal if error param is present in URL (for static HTML usage)
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = new URLSearchParams(window.location.search);
+            const error = params.get('error');
+            if (error) {
+                showErrorModal(decodeURIComponent(error));
+            }
+
+            // Client-side validation: prevent moving if source and destination queues are the same
+            var sourceQueueInput = document.getElementById('sourceQueue');
+            var destQueueInput = document.getElementById('destinationQueue');
+            var destForm = document.getElementById('destinationForm');
+            if (sourceQueueInput && destQueueInput && destForm) {
+                destForm.addEventListener('submit', function(e) {
+                    if (sourceQueueInput.value === destQueueInput.value) {
+                        e.preventDefault();
+                        showErrorModal('Source queue and destination queue cannot be the same.');
+                        return false;
+                    }
+                });
+            }
+        });
     </script>
+    
 </body>
 </html>
