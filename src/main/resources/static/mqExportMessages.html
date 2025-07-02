@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>MQ Consumer Connection</title>
+    <link href="mqExportMessages.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h2>MQ Export To File</h2>
+        <form action="/mq-consumer/exportMessages" method="GET" id="mqForm">
+            <div class="form-group">
+                <label for="host">Host:</label>
+                <input type="text" id="host" name="host" value="cs-v-mqdev1.champ.aero"/>
+            </div>
+            <div class="form-group">
+                <label for="manager">Manager:</label>
+                <input type="text" id="manager" name="manager" value="CCSLUXD1"/>
+            </div>
+            <div class="form-group">
+                <label for="channel">Channel:</label>
+                <input type="text" id="channel" name="channel" value="CS.SVRCONN"/>
+            </div>
+            <div class="form-group">
+                <label for="port">Port:</label>
+                <input type="text" id="port" name="port" value="1414"/>
+            </div>
+            <div class="form-group">
+                <label for="queue">Queue:</label>
+                <input type="text" id="queue" name="queue" value="CS.DEV.TEST2.OUT"/>
+            </div>
+
+            <div class="button-group">
+                <input type="submit" class="submit-btn" value="Export" />
+                <button type="button" class="home-btn" onclick="goHome()">Home</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function goHome() {
+            window.location.href = "/mq-consumer/";
+        }
+    </script>
+</body>
+</html>

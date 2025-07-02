@@ -24,6 +24,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import javax.servlet.http.HttpServletResponse;
 
 
 /**
@@ -401,5 +405,55 @@ public class MQController
 		model.addAttribute("movedTotal", movedMessages.size());
 		model.addAttribute("skippedTotal", skippedMessages.size());
 		return "movedMessages";
+	}
+
+	/**
+	 * Export MQ messages as text files and compress in a ZIP file
+	 *
+	 * @param allParams
+	 * @param response
+	 * @param model
+	 * @return
+	 * @throws IOException
+	 * @throws NumberFormatException
+	 * @throws MQException
+	 */
+	@GetMapping("/exportMessages")
+	public String exportMessages(@RequestParam Map<String, String> allParams, HttpServletResponse response, Model model)
+			throws IOException, NumberFormatException, MQException {
+
+		MqManagerConnection mq = MqManagerConnection.connect(allParams.get("host"), allParams.get("manager"),
+				allParams.get("channel"), Integer.parseInt(allParams.get("port")), allParams.get("queue"));
+
+		List<String> messages = retrieveMqMSGS(mq);
+
+		mq.revert();
+		mq.disconnect();
+
+		model.addAttribute("messages", messages);
+		model.addAttribute("total", messages.size());
+		model.addAttribute("isExport", Boolean.TRUE);
+
+		if (messages.isEmpty()) {
+			return "displayMessages";
+		} else {
+			// Create a ZIP file
+			response.setContentType("application/zip");
+			response.setHeader("Content-Disposition", "attachment; filename=messages.zip");
+
+			try (ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream())) {
+				for (int i = 0; i < messages.size(); i++) {
+					String message = messages.get(i);
+					ZipEntry zipEntry = new ZipEntry("message_" + (i + 1) + ".txt");
+					zipOut.putNextEntry(zipEntry);
+					zipOut.write(message.getBytes());
+					zipOut.closeEntry();
+				}
+			} catch (IOException e) {
+				//LOGGER.error("Failed to create ZIP output stream for HTTP response", e);
+				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			}
+		}
+		return null;
 	}
 }
